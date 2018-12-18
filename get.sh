@@ -1,5 +1,5 @@
 #!/bin/bash
-URL=https://artifactory.corp.ad.ctc/artifactory/npm-cds-local/automation-reports/
+URL=dest url here
 CUTS=`echo ${URL#http://} | awk -F '/' '{print NF -2}'`
 FILE=./file
 if [-e $FILE]; then

@@ -1,0 +1,44 @@
+from array import array
+import boto3
+import time
+import requests
+import json
+import subprocess
+import numpy as np
+
+argocd_host = "https://emv3ds-sit-argocd.2c2p.com"
+username = "admin"
+password = "argocd-server-ff5747956-44lrz"
+
+login_url = f"{argocd_host}/api/v1/session"
+login_data = {
+    "username": username,
+    "password": password
+}
+response = requests.post(login_url, json=login_data)
+if response.status_code == 200:
+    token = response.json().get("token")
+    print("Login successful. Token:", token)
+else:
+    print("Login failed:", response.text)
+
+def get_all_argoapps():
+    
+    get_argo_apps=subprocess.run(["bash","-c","argocd app list --grpc-web | awk '{ print $1 }' | cut -d'/' -f2 | sed 1d"], stdout=subprocess.PIPE).stdout.splitlines()
+    
+    for line in get_argo_apps:
+        argo_apps_list=line.decode("utf-8")
+        # get_deployed_image=subprocess.run(["bash","-c","argocd app get {argo_apps_list} --show-params --grpc-web -o json | jq -r '.spec.source.helm.parameters[0].value'"],stdout=subprocess.PIPE).stdout.splitlines()
+        print(argo_apps_list)
+        for item in argo_apps_list:
+            print("Performing action for:", item)
+            
+if __name__ == "__main__":
+    get_all_argoapps()
+
+
+
+# table = PrettyTable()
+# table.field_names = ["App Name", "ECR", "ArgoCD"]
+# table.add_row(["Sample argoapp", "ecr_image", "argocd_image"])
+# print(table)

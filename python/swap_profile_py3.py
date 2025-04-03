@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+# Python Script to swap AWS Profile configs
+
+# Assumes that credentials file is at ~/.aws/credentials
+
+import argparse
+import configparser
+import os
+import subprocess
+
+
+config = configparser.ConfigParser()
+config.read(os.path.expanduser('~/.aws/credentials'))
+
+def get_profile_to_swap_to():
+    """Parse the profile requested from user input"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("profile", help="profile to set as default")
+    args = parser.parse_args()
+    profile_to_swap_to = args.profile
+    sections = config.sections()
+    profiles = " ".join(str(item) for item in sections)
+    print(('\033[38;5;220mAvailable AWS Profiles: ')+'\033[38;5;202m'+profiles+'\n'+'\033[0;0m')
+    if profile_to_swap_to in sections:
+        return profile_to_swap_to
+    else:
+        section_list = ''
+        for i in sections:
+            section_list += (i + '\n')
+        raise ValueError(
+            "The profile '{0}' is not in your credentials file. \n\n" \
+            "Available profiles are:\n{1}".format(
+                profile_to_swap_to, 
+                section_list
+            )
+        )
+
+def swap_profile(profile_to_swap_to):
+
+    key = config.get(profile_to_swap_to, 'aws_access_key_id')
+    secret = config.get(profile_to_swap_to, 'aws_secret_access_key')
+    config.set('default', 'aws_access_key_id', key)
+    config.set('default', 'aws_secret_access_key', secret)
+    with open(os.path.expanduser('~/.aws/credentials'), 'wb') as configfile:
+        config.write(configfile)
+
+def main():
+    
+    profile = get_profile_to_swap_to()
+    #swap_profile(profile)
+    #print('\033[38;5;220mSwapped to profile: {0}'.format('\033[38;5;202m'+profile+'\033[0;0m\n'))
+    #push=subprocess.call(['aws', 'sts', 'get-caller-identity'])
+if __name__ == "__main__":
+    main()
